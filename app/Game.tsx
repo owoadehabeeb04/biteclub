@@ -86,7 +86,10 @@ export default function Game({ best, difficulty, sound, onSound, onQuit, onOver 
       audio.resume();
       if (e.key === 'Escape' || e.key === 'p' || e.key === 'P') { e.preventDefault(); if (!e.repeat) setPause(!hold.paused); }
     };
-    const onBlur = () => setPause(true);
+    // Pause when the window loses focus, but not on touch screens: phones fire blur during ordinary swipes
+    // (address bar, notification shade), which paused the game mid-swipe. There, switching apps still pauses via visibilitychange.
+    const coarse = matchMedia('(pointer: coarse)').matches;
+    const onBlur = () => { if (!coarse) setPause(true); };
     const onVis = () => { if (document.hidden) setPause(true); };
     window.addEventListener('keydown', onKey);
     window.addEventListener('blur', onBlur);
