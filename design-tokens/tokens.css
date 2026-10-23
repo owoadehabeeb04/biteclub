@@ -1,0 +1,88 @@
+/* BITECLUB design tokens v1 — import once in app/globals.css */
+:root {
+  /* Color */
+  --bc-ink: #0D130E;
+  --bc-pit: #152019;
+  --bc-moss: #1F2E24;
+  --bc-lime: #8CFF2E;
+  --bc-lime-deep: #5BC014;
+  --bc-bone: #F3EFDC;
+  --bc-gold: #FFC21A;        /* $BITE and rewards only */
+  --bc-gold-deep: #C98F00;
+  --bc-red: #FF4A2E;
+  --bc-red-deep: #A82E18;
+  --bc-void: #050805;
+  --bc-muted: #A9B5A3;
+
+  /* Bot snakes (never lime) */
+  --bc-bot-pink: #FF3D8B;
+  --bc-bot-cyan: #2ED8FF;
+  --bc-bot-orange: #FF8A1F;
+  --bc-bot-violet: #9B5CFF;
+  --bc-bot-teal: #17D6A3;
+  --bc-bot-yellow: #FFE53D;
+
+  /* Type */
+  --bc-font-display: 'Bungee', 'Arial Black', sans-serif;
+  --bc-font-body: 'Rubik', Arial, sans-serif;
+  --bc-font-mono: 'Space Mono', monospace;
+  --bc-text-display-xl: 96px;
+  --bc-text-display-l: 56px;
+  --bc-text-heading: 32px;
+  --bc-text-body-l: 20px;
+  --bc-text-body: 16px;
+  --bc-text-small: 14px;
+  --bc-text-label: 12px;
+
+  /* Space (4px base) */
+  --bc-space-1: 4px;
+  --bc-space-2: 8px;
+  --bc-space-3: 12px;
+  --bc-space-4: 16px;
+  --bc-space-5: 24px;
+  --bc-space-6: 32px;
+  --bc-space-7: 48px;
+  --bc-space-8: 64px;
+  --bc-space-9: 96px;
+
+  /* Radius + border */
+  --bc-radius-sm: 6px;
+  --bc-radius-md: 10px;
+  --bc-radius-lg: 16px;
+  --bc-radius-xl: 20px;
+  --bc-radius-pill: 999px;
+  --bc-border: 3px solid var(--bc-void);
+  --bc-border-card: 4px solid var(--bc-void);
+
+  /* Hard shadows: zero blur, always */
+  --bc-shadow-sm: 4px 4px 0 var(--bc-moss);
+  --bc-shadow-md: 6px 6px 0 var(--bc-moss);
+  --bc-shadow-lg: 8px 8px 0 var(--bc-moss);
+  --bc-shadow-lime-sm: 4px 4px 0 var(--bc-lime);
+  --bc-shadow-lime-md: 6px 6px 0 var(--bc-lime);
+  --bc-shadow-press-lime: 0 6px 0 var(--bc-lime-deep);
+  --bc-shadow-press-gold: 0 6px 0 var(--bc-gold-deep);
+  --bc-shadow-press-red: 0 6px 0 var(--bc-red-deep);
+
+  /* Motion */
+  --bc-motion-fast: 120ms ease-out;
+  --bc-motion-panel: 240ms ease-out;
+  --bc-motion-coin-pop: 400ms cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --bc-motion-fast: 0ms;
+    --bc-motion-panel: 0ms;
+    --bc-motion-coin-pop: 0ms;
+  }
+}
+
+/* Arena grid background helper */
+.bc-grid {
+  background-color: var(--bc-ink);
+  background-image:
+    linear-gradient(var(--bc-moss) 1px, transparent 1px),
+    linear-gradient(90deg, var(--bc-moss) 1px, transparent 1px);
+  background-size: 48px 48px;
+}

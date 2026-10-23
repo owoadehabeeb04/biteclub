@@ -1,0 +1,28 @@
+/* BITECLUB tokens v2. Supersedes design-tokens/tokens.css */
+:root {
+  --bc-void: #050805;
+  --bc-jungle: #0A130E;
+  --bc-moss: #12221A;
+  --bc-moss-line: #1F3828;
+  --bc-fog: #A9B5A3;
+  --bc-bone: #F6F1DC;
+  --bc-lime: #8CFF2E;
+  --bc-lime-shade: #4FA812;
+  --bc-lime-hi: #D2FF8F;
+  --bc-lime-pattern: #2E7A0E;
+  --bc-gold: #FFE53D;
+  --bc-gold-shadow: #8A6D00;
+  --bc-red: #FF4A2E;
+  --bc-red-shadow: #7A1A0A;
+
+  --bc-font-display: 'Bungee', 'Arial Black', sans-serif;
+  --bc-font-body: 'Rubik', system-ui, sans-serif;
+  --bc-font-mono: 'Space Mono', ui-monospace, monospace;
+
+  --bc-outline: 3px solid var(--bc-void);
+  --bc-shadow-panel: 5px 5px 0 var(--bc-void);
+  --bc-shadow-card: 8px 8px 0 var(--bc-moss-line);
+  --bc-shadow-btn: 0 6px 0 var(--bc-lime-shade);
+  --bc-radius: 14px;
+  --bc-radius-lg: 22px;
+}

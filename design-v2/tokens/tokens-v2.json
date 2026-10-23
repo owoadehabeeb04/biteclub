@@ -1,0 +1,39 @@
+{
+  "$description": "BITECLUB design tokens v2. Supersedes design-tokens/ (v1). Same arcade-sticker rules: flat fills, 3-4px Void outlines, hard offset shadows, zero blur.",
+  "color": {
+    "void": "#050805",
+    "jungle": "#0A130E",
+    "moss": "#12221A",
+    "mossLine": "#1F3828",
+    "fog": "#A9B5A3",
+    "bone": "#F6F1DC",
+    "lime": "#8CFF2E",
+    "limeShade": "#4FA812",
+    "limeHi": "#D2FF8F",
+    "limePattern": "#2E7A0E",
+    "gold": "#FFE53D",
+    "goldShadow": "#8A6D00",
+    "red": "#FF4A2E",
+    "redShadow": "#7A1A0A"
+  },
+  "skins": {
+    "limeViper": { "base": "#8CFF2E", "shade": "#4FA812", "highlight": "#D2FF8F", "pattern": "#2E7A0E", "playerOnly": true },
+    "gumPython": { "base": "#FF4FA0", "shade": "#C21F73", "highlight": "#FFB3D6", "pattern": "#FFE0EE" },
+    "iceCobra": { "base": "#2ED8FF", "shade": "#138FB5", "highlight": "#A4F0FF", "pattern": "#0B5C78" },
+    "emberMamba": { "base": "#FF8A1F", "shade": "#C25A00", "highlight": "#FFC28A", "pattern": "#7A2E00" },
+    "venomAdder": { "base": "#9B5CFF", "shade": "#5E2EC4", "highlight": "#CDB0FF", "pattern": "#2E0F7A" },
+    "tealRacer": { "base": "#17D6A3", "shade": "#0B8F6C", "highlight": "#8FF5D8", "pattern": "#06503D" }
+  },
+  "font": {
+    "display": "Bungee",
+    "body": "Rubik",
+    "mono": "Space Mono"
+  },
+  "rules": {
+    "outline": "Void, 3-4px on UI, thicker than the body on snakes",
+    "shadow": "Hard offset, zero blur. 5-8px on dark panels in Void or Moss Line, accent-dark on bright fills",
+    "gold": "Only ever means $BITE",
+    "red": "Only ever means danger: death, wall, failed claim",
+    "lime": "The player and the primary action. Bots never use lime"
+  }
+}

@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BITECLUB Snake Craft v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+<style>html,body{background:#050805}</style>
+</head>
+<body>
+<div style="position: relative; width: 1440px; height: 1200px; overflow: hidden; background: #0C1510; font-family: 'Rubik', Arial, sans-serif; color: #F6F1DC">
+
+<svg width="1440" height="1200" viewBox="0 0 1440 1200" aria-hidden="true" style="position: absolute; left: 0px; top: 0px">
+<defs>
+<pattern id="sk-floor" width="128" height="128" patternUnits="userSpaceOnUse">
+<rect width="128" height="128" fill="#0A130E"/>
+<rect x="3" y="3" width="58" height="58" rx="7" fill="#12221A"/>
+<rect x="67" y="3" width="58" height="58" rx="7" fill="#101E16"/>
+<rect x="3" y="67" width="58" height="58" rx="7" fill="#101E16"/>
+<rect x="67" y="67" width="58" height="58" rx="7" fill="#132319"/>
+</pattern>
+<filter id="sk-grain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="3"/><feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 1.2 0 0 0 -0.3"/></filter>
+</defs>
+<rect width="1440" height="1200" fill="url(#sk-floor)"/>
+<rect width="1440" height="1200" filter="url(#sk-grain)" opacity="0.1"/>
+</svg>
+
+<div style="position: absolute; left: 64px; top: 40px">
+<div style="font-family: 'Space Mono', monospace; font-weight: 700; font-size: 13px; letter-spacing: 1.5px; color: #8CFF2E">BITECLUB &#183; SNAKE CRAFT v2</div>
+<div style="font-family: 'Bungee', 'Arial Black', sans-serif; font-size: 44px; line-height: 1; margin-top: 8px">Built like a toy, not a dot</div>
+</div>
+
+<div style="position: absolute; left: 64px; top: 130px; width: 1312px; height: 200px; box-sizing: border-box; background: #12221A; border: 4px solid #050805; border-radius: 22px; box-shadow: 8px 8px 0 #1F3828; overflow: hidden">
+<svg width="1304" height="192" viewBox="0 0 1304 192" role="img" aria-label="Snake anatomy with five numbered layers">
+<g fill="none" stroke-linecap="round" stroke-linejoin="round">
+<path d="M70 130 C200 40 300 190 440 110 S600 60 700 112" stroke="#050805" stroke-opacity="0.45" stroke-width="56" transform="translate(8 12)"/>
+<path d="M70 130 C200 40 300 190 440 110 S600 60 700 112" stroke="#050805" stroke-width="56"/>
+<path d="M70 130 C200 40 300 190 440 110 S600 60 700 112" stroke="#4FA812" stroke-width="46"/>
+<path d="M70 130 C200 40 300 190 440 110 S600 60 700 112" stroke="#8CFF2E" stroke-width="38" transform="translate(-2 -4)"/>
+<path d="M70 130 C200 40 300 190 440 110 S600 60 700 112" stroke="#2E7A0E" stroke-width="30" stroke-dasharray="6 28" stroke-linecap="butt" opacity="0.55"/>
+<path d="M70 130 C200 40 300 190 440 110 S600 60 700 112" stroke="#D2FF8F" stroke-width="5" stroke-dasharray="24 34" transform="translate(-4 -12)"/>
+</g>
+<g transform="translate(700 112) rotate(30)">
+<ellipse rx="40" ry="34" fill="#050805"/>
+<ellipse rx="35" ry="29" fill="#4FA812"/>
+<ellipse cx="-2" cy="-3" rx="32" ry="26" fill="#8CFF2E"/>
+<path d="M-18 -20 C-8 -26 6 -26 14 -20" fill="none" stroke="#D2FF8F" stroke-width="5" stroke-linecap="round"/>
+<ellipse cx="8" cy="-14" rx="10" ry="11" fill="#F6F1DC" stroke="#050805" stroke-width="3.5"/>
+<ellipse cx="8" cy="14" rx="10" ry="11" fill="#F6F1DC" stroke="#050805" stroke-width="3.5"/>
+<circle cx="12" cy="-14" r="5" fill="#050805"/><circle cx="12" cy="14" r="5" fill="#050805"/>
+<circle cx="14" cy="-16" r="1.8" fill="#F6F1DC"/><circle cx="14" cy="12" r="1.8" fill="#F6F1DC"/>
+<path d="M36 0 H62 M62 0 L74 -9 M62 0 L74 9" fill="none" stroke="#FF4A2E" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<g font-family="Space Mono, monospace" font-weight="700" font-size="13" text-anchor="middle">
+<circle cx="190" cy="48" r="13" fill="#F6F1DC" stroke="#050805" stroke-width="3"/><text x="190" y="53" fill="#050805">1</text>
+<circle cx="330" cy="158" r="13" fill="#F6F1DC" stroke="#050805" stroke-width="3"/><text x="330" y="163" fill="#050805">2</text>
+<circle cx="520" cy="62" r="13" fill="#F6F1DC" stroke="#050805" stroke-width="3"/><text x="520" y="67" fill="#050805">3</text>
+<circle cx="610" cy="140" r="13" fill="#F6F1DC" stroke="#050805" stroke-width="3"/><text x="610" y="145" fill="#050805">4</text>
+<circle cx="716" cy="46" r="13" fill="#F6F1DC" stroke="#050805" stroke-width="3"/><text x="716" y="51" fill="#050805">5</text>
+</g>
+<g font-family="Rubik, sans-serif" font-size="15" fill="#F6F1DC">
+<text x="830" y="40" font-family="Bungee, sans-serif" font-size="18">Five layers, no gradients</text>
+<text x="830" y="72" fill="#A9B5A3"><tspan fill="#F6F1DC" font-weight="700">1</tspan>  Floor shadow, offset, flat, no blur</text>
+<text x="830" y="96" fill="#A9B5A3"><tspan fill="#F6F1DC" font-weight="700">2</tspan>  Void outline, thicker than the body</text>
+<text x="830" y="120" fill="#A9B5A3"><tspan fill="#F6F1DC" font-weight="700">3</tspan>  Shade rim and base fill, nudged up-left</text>
+<text x="830" y="144" fill="#A9B5A3"><tspan fill="#F6F1DC" font-weight="700">4</tspan>  Pattern bands, skin-specific</text>
+<text x="830" y="168" fill="#A9B5A3"><tspan fill="#F6F1DC" font-weight="700">5</tspan>  Highlight dashes plus a head that turns</text>
+</g>
+</svg>
+</div>
+
+<div style="position: absolute; left: 64px; top: 360px; width: 1312px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px">
+
+<div style="height: 280px; box-sizing: border-box; background: #12221A; border: 4px solid #050805; border-radius: 20px; box-shadow: 6px 6px 0 #1F3828; position: relative; overflow: hidden">
+<svg width="100%" height="280" viewBox="0 0 416 280" role="img" aria-label="Lime Viper skin, player">
+<g fill="none" stroke-linecap="round" stroke-linejoin="round">
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#050805" stroke-opacity="0.45" stroke-width="42" transform="translate(6 9)"/>
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#050805" stroke-width="42"/>
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#4FA812" stroke-width="34"/>
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#8CFF2E" stroke-width="28" transform="translate(-1.5 -3)"/>
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#2E7A0E" stroke-width="22" stroke-dasharray="5 22" stroke-linecap="butt" opacity="0.55"/>
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#D2FF8F" stroke-width="4" stroke-dasharray="18 28" transform="translate(-3 -9)"/>
+</g>
+<g transform="translate(340 140) rotate(55)">
+<ellipse rx="30" ry="25" fill="#050805"/><ellipse rx="26" ry="21" fill="#4FA812"/><ellipse cx="-1.5" cy="-2" rx="24" ry="19" fill="#8CFF2E"/>
+<ellipse cx="6" cy="-10" rx="7.5" ry="8" fill="#F6F1DC" stroke="#050805" stroke-width="3"/><ellipse cx="6" cy="10" rx="7.5" ry="8" fill="#F6F1DC" stroke="#050805" stroke-width="3"/>
+<circle cx="9" cy="-10" r="3.6" fill="#050805"/><circle cx="9" cy="10" r="3.6" fill="#050805"/>
+<path d="M27 0 H44 M44 0 L53 -7 M44 0 L53 7" fill="none" stroke="#FF4A2E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</svg>
+<div style="position: absolute; left: 18px; bottom: 14px"><div style="font-family: 'Bungee', sans-serif; font-size: 20px; color: #8CFF2E">Lime Viper</div><div style="font-family: 'Space Mono', monospace; font-size: 11px; color: #A9B5A3">Diamond bands. Player only.</div></div>
+</div>
+
+<div style="height: 280px; box-sizing: border-box; background: #12221A; border: 4px solid #050805; border-radius: 20px; box-shadow: 6px 6px 0 #1F3828; position: relative; overflow: hidden">
+<svg width="100%" height="280" viewBox="0 0 416 280" role="img" aria-label="Gum Python skin, striped">
+<g fill="none" stroke-linecap="round" stroke-linejoin="round">
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#050805" stroke-opacity="0.45" stroke-width="42" transform="translate(6 9)"/>
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#050805" stroke-width="42"/>
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#C21F73" stroke-width="34"/>
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#FF4FA0" stroke-width="28" transform="translate(-1.5 -3)"/>
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#FFE0EE" stroke-width="28" stroke-dasharray="6 24" stroke-linecap="butt" opacity="0.9"/>
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#FFB3D6" stroke-width="4" stroke-dasharray="18 28" transform="translate(-3 -9)"/>
+</g>
+<g transform="translate(340 140) rotate(55)">
+<ellipse rx="30" ry="25" fill="#050805"/><ellipse rx="26" ry="21" fill="#C21F73"/><ellipse cx="-1.5" cy="-2" rx="24" ry="19" fill="#FF4FA0"/>
+<ellipse cx="6" cy="-10" rx="7.5" ry="8" fill="#F6F1DC" stroke="#050805" stroke-width="3"/><ellipse cx="6" cy="10" rx="7.5" ry="8" fill="#F6F1DC" stroke="#050805" stroke-width="3"/>
+<circle cx="9" cy="-10" r="3.6" fill="#050805"/><circle cx="9" cy="10" r="3.6" fill="#050805"/>
+<path d="M27 0 H44 M44 0 L53 -7 M44 0 L53 7" fill="none" stroke="#FF4A2E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</svg>
+<div style="position: absolute; left: 18px; bottom: 14px"><div style="font-family: 'Bungee', sans-serif; font-size: 20px; color: #FF4FA0">Gum Python</div><div style="font-family: 'Space Mono', monospace; font-size: 11px; color: #A9B5A3">Candy stripes. Bot skin.</div></div>
+</div>
+
+<div style="height: 280px; box-sizing: border-box; background: #12221A; border: 4px solid #050805; border-radius: 20px; box-shadow: 6px 6px 0 #1F3828; position: relative; overflow: hidden">
+<svg width="100%" height="280" viewBox="0 0 416 280" role="img" aria-label="Ice Cobra skin, dotted">
+<g fill="none" stroke-linecap="round" stroke-linejoin="round">
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#050805" stroke-opacity="0.45" stroke-width="42" transform="translate(6 9)"/>
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#050805" stroke-width="42"/>
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#138FB5" stroke-width="34"/>
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#2ED8FF" stroke-width="28" transform="translate(-1.5 -3)"/>
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#0B5C78" stroke-width="11" stroke-dasharray="0 24"/>
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#A4F0FF" stroke-width="4" stroke-dasharray="18 28" transform="translate(-3 -9)"/>
+</g>
+<g transform="translate(340 140) rotate(55)">
+<ellipse rx="30" ry="25" fill="#050805"/><ellipse rx="26" ry="21" fill="#138FB5"/><ellipse cx="-1.5" cy="-2" rx="24" ry="19" fill="#2ED8FF"/>
+<ellipse cx="6" cy="-10" rx="7.5" ry="8" fill="#F6F1DC" stroke="#050805" stroke-width="3"/><ellipse cx="6" cy="10" rx="7.5" ry="8" fill="#F6F1DC" stroke="#050805" stroke-width="3"/>
+<circle cx="9" cy="-10" r="3.6" fill="#050805"/><circle cx="9" cy="10" r="3.6" fill="#050805"/>
+<path d="M27 0 H44 M44 0 L53 -7 M44 0 L53 7" fill="none" stroke="#FF4A2E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</svg>
+<div style="position: absolute; left: 18px; bottom: 14px"><div style="font-family: 'Bungee', sans-serif; font-size: 20px; color: #2ED8FF">Ice Cobra</div><div style="font-family: 'Space Mono', monospace; font-size: 11px; color: #A9B5A3">Polka dots. Bot skin.</div></div>
+</div>
+
+<div style="height: 280px; box-sizing: border-box; background: #12221A; border: 4px solid #050805; border-radius: 20px; box-shadow: 6px 6px 0 #1F3828; position: relative; overflow: hidden">
+<svg width="100%" height="280" viewBox="0 0 416 280" role="img" aria-label="Ember Mamba skin, banded">
+<g fill="none" stroke-linecap="round" stroke-linejoin="round">
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#050805" stroke-opacity="0.45" stroke-width="42" transform="translate(6 9)"/>
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#050805" stroke-width="42"/>
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#C25A00" stroke-width="34"/>
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#FF8A1F" stroke-width="28" transform="translate(-1.5 -3)"/>
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#7A2E00" stroke-width="30" stroke-dasharray="12 26" stroke-linecap="butt"/>
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#FFC28A" stroke-width="4" stroke-dasharray="18 28" transform="translate(-3 -9)"/>
+</g>
+<g transform="translate(340 140) rotate(55)">
+<ellipse rx="30" ry="25" fill="#050805"/><ellipse rx="26" ry="21" fill="#C25A00"/><ellipse cx="-1.5" cy="-2" rx="24" ry="19" fill="#FF8A1F"/>
+<ellipse cx="6" cy="-10" rx="7.5" ry="8" fill="#F6F1DC" stroke="#050805" stroke-width="3"/><ellipse cx="6" cy="10" rx="7.5" ry="8" fill="#F6F1DC" stroke="#050805" stroke-width="3"/>
+<circle cx="9" cy="-10" r="3.6" fill="#050805"/><circle cx="9" cy="10" r="3.6" fill="#050805"/>
+<path d="M27 0 H44 M44 0 L53 -7 M44 0 L53 7" fill="none" stroke="#F6F1DC" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</svg>
+<div style="position: absolute; left: 18px; bottom: 14px"><div style="font-family: 'Bungee', sans-serif; font-size: 20px; color: #FF8A1F">Ember Mamba</div><div style="font-family: 'Space Mono', monospace; font-size: 11px; color: #A9B5A3">Wide bands. Bot skin.</div></div>
+</div>
+
+<div style="height: 280px; box-sizing: border-box; background: #12221A; border: 4px solid #050805; border-radius: 20px; box-shadow: 6px 6px 0 #1F3828; position: relative; overflow: hidden">
+<svg width="100%" height="280" viewBox="0 0 416 280" role="img" aria-label="Venom Adder skin, spotted">
+<g fill="none" stroke-linecap="round" stroke-linejoin="round">
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#050805" stroke-opacity="0.45" stroke-width="42" transform="translate(6 9)"/>
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#050805" stroke-width="42"/>
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#5E2EC4" stroke-width="34"/>
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#9B5CFF" stroke-width="28" transform="translate(-1.5 -3)"/>
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#2E0F7A" stroke-width="15" stroke-dasharray="0 34"/>
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#CDB0FF" stroke-width="4" stroke-dasharray="18 28" transform="translate(-3 -9)"/>
+</g>
+<g transform="translate(340 140) rotate(55)">
+<ellipse rx="30" ry="25" fill="#050805"/><ellipse rx="26" ry="21" fill="#5E2EC4"/><ellipse cx="-1.5" cy="-2" rx="24" ry="19" fill="#9B5CFF"/>
+<ellipse cx="6" cy="-10" rx="7.5" ry="8" fill="#F6F1DC" stroke="#050805" stroke-width="3"/><ellipse cx="6" cy="10" rx="7.5" ry="8" fill="#F6F1DC" stroke="#050805" stroke-width="3"/>
+<circle cx="9" cy="-10" r="3.6" fill="#050805"/><circle cx="9" cy="10" r="3.6" fill="#050805"/>
+<path d="M27 0 H44 M44 0 L53 -7 M44 0 L53 7" fill="none" stroke="#FF4A2E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</svg>
+<div style="position: absolute; left: 18px; bottom: 14px"><div style="font-family: 'Bungee', sans-serif; font-size: 20px; color: #9B5CFF">Venom Adder</div><div style="font-family: 'Space Mono', monospace; font-size: 11px; color: #A9B5A3">Big spots. Bot skin.</div></div>
+</div>
+
+<div style="height: 280px; box-sizing: border-box; background: #12221A; border: 4px solid #050805; border-radius: 20px; box-shadow: 6px 6px 0 #1F3828; position: relative; overflow: hidden">
+<svg width="100%" height="280" viewBox="0 0 416 280" role="img" aria-label="Teal Racer skin, chevron ticks">
+<g fill="none" stroke-linecap="round" stroke-linejoin="round">
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#050805" stroke-opacity="0.45" stroke-width="42" transform="translate(6 9)"/>
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#050805" stroke-width="42"/>
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#0B8F6C" stroke-width="34"/>
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#17D6A3" stroke-width="28" transform="translate(-1.5 -3)"/>
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#06503D" stroke-width="28" stroke-dasharray="3 11" stroke-linecap="butt"/>
+<path d="M40 210 C90 110 150 250 210 160 S320 90 340 140" stroke="#8FF5D8" stroke-width="4" stroke-dasharray="18 28" transform="translate(-3 -9)"/>
+</g>
+<g transform="translate(340 140) rotate(55)">
+<ellipse rx="30" ry="25" fill="#050805"/><ellipse rx="26" ry="21" fill="#0B8F6C"/><ellipse cx="-1.5" cy="-2" rx="24" ry="19" fill="#17D6A3"/>
+<ellipse cx="6" cy="-10" rx="7.5" ry="8" fill="#F6F1DC" stroke="#050805" stroke-width="3"/><ellipse cx="6" cy="10" rx="7.5" ry="8" fill="#F6F1DC" stroke="#050805" stroke-width="3"/>
+<circle cx="9" cy="-10" r="3.6" fill="#050805"/><circle cx="9" cy="10" r="3.6" fill="#050805"/>
+<path d="M27 0 H44 M44 0 L53 -7 M44 0 L53 7" fill="none" stroke="#FF4A2E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</svg>
+<div style="position: absolute; left: 18px; bottom: 14px"><div style="font-family: 'Bungee', sans-serif; font-size: 20px; color: #17D6A3">Teal Racer</div><div style="font-family: 'Space Mono', monospace; font-size: 11px; color: #A9B5A3">Fine ticks. Bot skin.</div></div>
+</div>
+
+</div>
+
+<div style="position: absolute; left: 64px; top: 960px; width: 1312px; height: 200px; box-sizing: border-box; background: #12221A; border: 4px solid #050805; border-radius: 22px; box-shadow: 8px 8px 0 #1F3828; overflow: hidden">
+<div style="position: absolute; left: 24px; top: 18px; font-family: 'Bungee', sans-serif; font-size: 20px">Food: little creatures, not dots</div>
+<svg width="1304" height="192" viewBox="0 0 1304 192" role="img" aria-label="Four food types: berry, beetle, firefly, bead" style="position: absolute; left: 0; top: 0">
+<g transform="translate(150 108) scale(2.2)">
+<circle cx="4" cy="6" r="18" fill="#050805" opacity="0.4"/>
+<circle r="18" fill="#C21F73" stroke="#050805" stroke-width="3.5"/>
+<circle cx="-2" cy="-3" r="14.5" fill="#FF4FA0"/>
+<circle cx="-6" cy="-8" r="4" fill="#FFB3D6"/>
+<path d="M2 -17 C8 -30 20 -28 22 -26 C18 -18 10 -15 2 -17Z" fill="#4FA812" stroke="#050805" stroke-width="2.5" stroke-linejoin="round"/>
+</g>
+<g transform="translate(440 108) rotate(28) scale(2.2)">
+<ellipse cx="3" cy="6" rx="17" ry="21" fill="#050805" opacity="0.4"/>
+<path d="M-14 -4 L-27 -12 M-15 6 L-28 8 M-13 15 L-25 24 M14 -4 L27 -12 M15 6 L28 8 M13 15 L25 24" stroke="#050805" stroke-width="3" stroke-linecap="round" fill="none"/>
+<ellipse rx="17" ry="21" fill="#C25A00" stroke="#050805" stroke-width="3.5"/>
+<ellipse cx="-2" cy="-2" rx="13.5" ry="17.5" fill="#FF8A1F"/>
+<path d="M0 -19 V21" stroke="#050805" stroke-width="2.5"/>
+<circle cx="-7" cy="-4" r="3" fill="#050805" opacity="0.7"/><circle cx="7" cy="5" r="3" fill="#050805" opacity="0.7"/>
+<circle cy="-24" r="8" fill="#050805"/>
+<path d="M-4 -30 L-9 -37 M4 -30 L9 -37" stroke="#050805" stroke-width="2.5" stroke-linecap="round"/>
+</g>
+<g transform="translate(730 108) scale(2)">
+<circle r="40" fill="#FFE53D" opacity="0.1"/><circle r="30" fill="#FFE53D" opacity="0.16"/><circle r="21" fill="#FFE53D" opacity="0.24"/>
+<ellipse cx="-12" cy="-6" rx="13" ry="7" transform="rotate(-35 -12 -6)" fill="#F6F1DC" stroke="#050805" stroke-width="2.5"/>
+<ellipse cx="12" cy="-6" rx="13" ry="7" transform="rotate(35 12 -6)" fill="#F6F1DC" stroke="#050805" stroke-width="2.5"/>
+<ellipse rx="7" ry="12" fill="#FFE53D" stroke="#050805" stroke-width="3"/>
+<circle cy="8" r="5" fill="#FFF59A"/>
+</g>
+<g transform="translate(1010 108) scale(2.2)">
+<circle cx="3" cy="4" r="9" fill="#050805" opacity="0.4"/>
+<circle r="9" fill="#2E0F7A" stroke="#050805" stroke-width="3"/>
+<circle cx="-1" cy="-1.5" r="6.8" fill="#9B5CFF"/>
+<circle cx="-3" cy="-4" r="2.2" fill="#CDB0FF"/>
+</g>
+<g font-family="Space Mono, monospace" font-size="12" fill="#A9B5A3" text-anchor="middle">
+<text x="150" y="176">BERRY  +1</text><text x="440" y="176">BEETLE  +2</text><text x="730" y="176">FIREFLY  +5, glows</text><text x="1010" y="176">BEAD  dropped by dead snakes</text>
+</g>
+</svg>
+</div>
+
+</div>
+</body>
+</html>
