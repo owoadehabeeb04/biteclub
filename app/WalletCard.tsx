@@ -10,7 +10,7 @@ const STATEMENT = 'Sign in to BITECLUB. This is free and sends nothing to the bl
 const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
 const why = (e: unknown) => {
   const m = (e as Error)?.message ?? '';
-  if ((e as { code?: number })?.code === 4001 || /reject|denied|cancel/i.test(m)) return 'You cancelled that in your wallet.';
+  if ((e as { code?: number })?.code === 4001 || /reject|denied|cancel|closed|reset/i.test(m)) return 'Cancelled. Nothing was changed.';
   return m.split('\n')[0].slice(0, 140) || 'Something went wrong.';
 };
 
@@ -27,14 +27,23 @@ export default function WalletCard({ me, onLinked }: { me: Me; onLinked: (r: Wal
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ text: string; bad: boolean } | null>(null);
   const [confirm, setConfirm] = useState<{ games: number; message: string; signature: string } | null>(null);
-  useEffect(() => setMounted(true), []);
+  const [phone, setPhone] = useState(false); // a touch screen: WalletConnect (phone wallets) goes first
+  useEffect(() => { setMounted(true); setPhone(matchMedia('(pointer: coarse)').matches); }, []);
 
   // Wallets announce themselves by name. The generic entry is only for older wallets that don't.
-  const named = connectors.filter((c) => c.id !== 'injected');
+  const walletConnect = connectors.find((c) => c.type === 'walletConnect'); // only present when a WalletConnect project ID is set
+  const named = connectors.filter((c) => c.id !== 'injected' && c.type !== 'walletConnect');
   const hasGeneric = mounted && named.length === 0 && typeof (window as { ethereum?: unknown }).ethereum !== 'undefined';
 
   const mine = me.wallet && address ? me.wallet === address.toLowerCase() : false;
   const wrongNetwork = isConnected && chainId !== robinhoodTestnet.id;
+
+  const wcButton = walletConnect && (
+    <button className="wallet-btn" onClick={() => doConnect(walletConnect)} disabled={connecting}>
+      <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#3B99FC" /><path d="M7.2 9.6c2.6-2.5 6.9-2.5 9.6 0l.3.3a.3.3 0 0 1 0 .4l-1.1 1.1a.2.2 0 0 1-.3 0l-.4-.4c-1.8-1.8-4.8-1.8-6.7 0l-.5.4a.2.2 0 0 1-.3 0L6.8 10.3a.3.3 0 0 1 0-.4l.4-.3Z" fill="#fff" /></svg>
+      <span>WalletConnect<small style={{ display: 'block', fontFamily: 'var(--bc-font-body)', fontSize: 12, color: 'var(--bc-fog)' }}>Phone and mobile wallets</small></span>
+    </button>
+  );
 
   async function doConnect(c: (typeof connectors)[number]) {
     setMsg(null);
@@ -96,6 +105,7 @@ export default function WalletCard({ me, onLinked }: { me: Me; onLinked: (r: Wal
             ? <button className="btn ghost" style={{ marginTop: 12 }} onClick={() => setOpen(true)} disabled={connecting}>{connecting ? 'Connecting…' : 'Connect wallet'}</button>
             : (
               <div className="wallets" role="group" aria-label="Choose a wallet">
+                {mounted && phone && wcButton}
                 {mounted && named.map((c) => (
                   <button key={c.uid} className="wallet-btn" onClick={() => doConnect(c)} disabled={connecting}>
                     {c.icon && <img src={c.icon} alt="" width={24} height={24} />}<span>{c.name}</span>
@@ -104,7 +114,8 @@ export default function WalletCard({ me, onLinked }: { me: Me; onLinked: (r: Wal
                 {hasGeneric && (
                   <button className="wallet-btn" onClick={() => doConnect(connectors.find((c) => c.id === 'injected')!)} disabled={connecting}><span>Browser wallet</span></button>
                 )}
-                {mounted && named.length === 0 && !hasGeneric && (
+                {mounted && !phone && wcButton}
+                {mounted && named.length === 0 && !hasGeneric && !walletConnect && (
                   <p className="note" style={{ margin: 0 }}>
                     No wallet found in this browser. Install one such as MetaMask or Rabby, then reload. On a phone, open this page inside your wallet app’s own browser.
                   </p>
@@ -135,6 +146,7 @@ export default function WalletCard({ me, onLinked }: { me: Me; onLinked: (r: Wal
                 {busy ? 'Check your wallet…' : me.wallet ? 'Sign in with this wallet' : 'Sign in to link wallet'}
               </button>
               <p className="note" style={{ margin: '8px 0 0' }}>Signing is free and sends nothing to the blockchain.</p>
+              {busy && connector?.type === 'walletConnect' && <p className="note" role="status" style={{ margin: '8px 0 0' }}>If nothing appeared, open your wallet app and approve the request there.</p>}
             </div>
           )}
 
