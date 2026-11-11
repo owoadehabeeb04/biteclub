@@ -30,6 +30,21 @@ export default function WalletCard({ me, onLinked }: { me: Me; onLinked: (r: Wal
   const [phone, setPhone] = useState(false); // a touch screen: WalletConnect (phone wallets) goes first
   useEffect(() => { setMounted(true); setPhone(matchMedia('(pointer: coarse)').matches); }, []);
 
+  // WalletConnect needs to reach its relay server. Some networks (or a broken DNS) can't, and its popup then spins forever with
+  // a blank QR code. Check when the list opens, so we can say so before anyone taps it. This only warns; it never blocks.
+  const [wcReachable, setWcReachable] = useState<boolean | null>(null);
+  const hasWalletConnect = connectors.some((c) => c.type === 'walletConnect');
+  useEffect(() => {
+    if (!open || !hasWalletConnect || wcReachable !== null) return;
+    let live = true;
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), 6000);
+    fetch('https://relay.walletconnect.org/', { mode: 'no-cors', cache: 'no-store', signal: ctl.signal })
+      .then(() => live && setWcReachable(true), () => live && setWcReachable(false))
+      .finally(() => clearTimeout(timer));
+    return () => { live = false; clearTimeout(timer); ctl.abort(); };
+  }, [open, hasWalletConnect, wcReachable]);
+
   // Wallets announce themselves by name. The generic entry is only for older wallets that don't.
   const walletConnect = connectors.find((c) => c.type === 'walletConnect'); // only present when a WalletConnect project ID is set
   const named = connectors.filter((c) => c.id !== 'injected' && c.type !== 'walletConnect');
@@ -39,10 +54,17 @@ export default function WalletCard({ me, onLinked }: { me: Me; onLinked: (r: Wal
   const wrongNetwork = isConnected && chainId !== robinhoodTestnet.id;
 
   const wcButton = walletConnect && (
+    <>
     <button className="wallet-btn" onClick={() => doConnect(walletConnect)} disabled={connecting}>
       <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#3B99FC" /><path d="M7.2 9.6c2.6-2.5 6.9-2.5 9.6 0l.3.3a.3.3 0 0 1 0 .4l-1.1 1.1a.2.2 0 0 1-.3 0l-.4-.4c-1.8-1.8-4.8-1.8-6.7 0l-.5.4a.2.2 0 0 1-.3 0L6.8 10.3a.3.3 0 0 1 0-.4l.4-.3Z" fill="#fff" /></svg>
       <span>WalletConnect<small style={{ display: 'block', fontFamily: 'var(--bc-font-body)', fontSize: 12, color: 'var(--bc-fog)' }}>Phone and mobile wallets</small></span>
     </button>
+    {wcReachable === false && (
+      <p className="note" role="status" style={{ margin: 0 }}>
+        WalletConnect can’t be reached from this network right now, so its QR code may not load. Try another network or DNS (such as 8.8.8.8), or use a browser wallet.
+      </p>
+    )}
+    </>
   );
 
   async function doConnect(c: (typeof connectors)[number]) {
@@ -83,7 +105,8 @@ export default function WalletCard({ me, onLinked }: { me: Me; onLinked: (r: Wal
 
   async function switchNetwork() {
     setMsg(null);
-    try { await switchChain({ chainId: robinhoodTestnet.id }); } catch (e) { setMsg({ text: why(e), bad: true }); }
+    try { await switchChain({ chainId: robinhoodTestnet.id }); }
+    catch (e) { setMsg({ text: `${why(e)} Some wallets don’t support ${robinhoodTestnet.name} yet. You can still sign in and link this wallet.`, bad: true }); }
   }
 
   return (
