@@ -1,7 +1,9 @@
 // All database access lives here, behind the Store interface. Everything else is storage-agnostic.
 // Local dev uses Node's built-in SQLite (a file under .data/). The SQL is plain, so moving to Postgres
 // for deploy means re-implementing this one file (e.g. with Prisma). Vercel's disk is not persistent.
-import { DatabaseSync } from 'node:sqlite';
+import type { DatabaseSync } from 'node:sqlite';
+import postgres from 'postgres';
+import { createPgStore } from './store.pg.ts';
 import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { DIFFICULTIES, type Difficulty } from '../sim/sim.ts';
@@ -109,7 +111,7 @@ function addColumn(db: DatabaseSync, table: string, column: string, ddl: string)
   if (!cols.some((c) => c.name === column)) db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${ddl}`);
 }
 
-function parseSettings(raw: unknown): Settings {
+export function parseSettings(raw: unknown): Settings {
   try {
     const s = JSON.parse(String(raw ?? '{}'));
     return {
@@ -126,7 +128,9 @@ const toPlayer = (r: Row): Player => ({
 
 export function createStore(path: string): Store {
   if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true });
-  const db = new DatabaseSync(path);
+  // Loaded here rather than imported at the top, so a deploy that uses Postgres never touches node:sqlite
+  const { DatabaseSync: Sqlite } = process.getBuiltinModule('node:sqlite') as typeof import('node:sqlite');
+  const db = new Sqlite(path);
   db.exec(SCHEMA);
   addColumn(db, 'players', 'settings', `TEXT NOT NULL DEFAULT '{}'`);
   addColumn(db, 'players', 'name', 'TEXT');
@@ -226,7 +230,25 @@ export function createStore(path: string): Store {
 }
 
 const g = globalThis as { __biteclubStore?: Store };
-/** The app-wide store. Cached on globalThis so dev hot reloads don't reopen the file. */
+/** Postgres over a connection string. `prepare: false` and one connection per instance suit serverless and pooled (pgbouncer) URLs. */
+export function createPostgresStore(url: string): Store {
+  const sql = postgres(url, { max: 1, prepare: false, idle_timeout: 20, connect_timeout: 15 });
+  return createPgStore({
+    async query(text, params) { const rows = await sql.unsafe(text, params as never[]); return { rows: rows as unknown as Record<string, unknown>[], count: rows.count }; },
+    async exec(text) { await sql.unsafe(text); },
+  });
+}
+
+function makeStore(): Store {
+  // Vercel's Postgres (Neon) integration sets DATABASE_URL and POSTGRES_URL
+  const url = process.env.DATABASE_URL ?? process.env.POSTGRES_URL;
+  if (url) return createPostgresStore(url);
+  // No writable disk on Vercel, so the SQLite file can't work there. Say so, instead of failing with an empty 500.
+  if (process.env.VERCEL) throw new Error('No database configured. Add a Postgres database to the Vercel project (Storage tab) so DATABASE_URL is set, then redeploy.');
+  return createStore(process.env.BITECLUB_DB ?? '.data/biteclub.db');
+}
+
+/** The app-wide store: Postgres when DATABASE_URL is set, otherwise a local SQLite file. Cached so hot reloads don't reopen it. */
 export function getStore(): Store {
-  return (g.__biteclubStore ??= createStore(process.env.BITECLUB_DB ?? '.data/biteclub.db'));
+  return (g.__biteclubStore ??= makeStore());
 }

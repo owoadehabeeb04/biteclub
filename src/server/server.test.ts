@@ -5,6 +5,7 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { DX, DY, TPS, createGame, step, type Difficulty, type Input } from '../sim/sim.ts';
+import { newStore, PG } from './test-store.ts';
 import { createStore, type Store } from './store.ts';
 import { MAX_TICKS, startRun, submitRun } from './runs.ts';
 import { createPlayer, leaderboard, normalizeCode, playerFromCode, restorePlayer, updateName, updateSettings } from './players.ts';
@@ -37,9 +38,10 @@ function play(seed: number, cols: number, rows: number, difficulty: Difficulty =
   assert.equal(s.alive, false);
   return { inputs, ticks: s.tick, score: s.score };
 }
-const after = (ticks: number) => T0 + (ticks * 1000) / TPS + 2000; // a believable submit time
+const after = (ticks: number) => Math.ceil(T0 + (ticks * 1000) / TPS + 2000); // a believable submit time
 
-async function issue(store: Store = createStore(':memory:'), playerId: string | null = null, difficulty: Difficulty = 'medium') {
+async function issue(given?: Store, playerId: string | null = null, difficulty: Difficulty = 'medium') {
+  const store = given ?? await newStore();
   const r = await startRun(store, { ...grid, difficulty }, playerId, T0);
   assert.equal(r.status, 200);
   return { store, ...(r.body as { runId: string; seed: number; cols: number; rows: number; difficulty: Difficulty }) };
@@ -143,13 +145,13 @@ test('malformed submissions are rejected', async () => {
 });
 
 test('grid size and difficulty must be valid to start a run', async () => {
-  const store = createStore(':memory:');
+  const store = await newStore();
   for (const body of [{ cols: 5, rows: 20, difficulty: 'medium' }, { cols: 20, rows: 99, difficulty: 'medium' }, { cols: 'a', rows: 20, difficulty: 'medium' }, { cols: 20, rows: 20 }, { cols: 20, rows: 20, difficulty: 'nightmare' }, null])
     assert.equal((await startRun(store, body, null, T0)).status, 400, JSON.stringify(body));
 });
 
 test('issued seeds are server-made and differ per run', async () => {
-  const store = createStore(':memory:');
+  const store = await newStore();
   assert.notEqual((await issue(store)).seed, (await issue(store)).seed);
 });
 
@@ -161,7 +163,7 @@ test('recovery codes: format, forgiving input, rejects junk', () => {
 });
 
 test('a player can be restored with their code, in any browser', async () => {
-  const store = createStore(':memory:');
+  const store = await newStore();
   const { playerId, code } = await createPlayer(store, T0);
   assert.match(code, /^BITE-[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{4}$/);
   const p = await playerFromCode(store, code.toLowerCase().replaceAll('-', ' '));
@@ -171,14 +173,14 @@ test('a player can be restored with their code, in any browser', async () => {
 });
 
 test('the server stores a hash of the code, never the code', async () => {
-  const store = createStore(':memory:');
+  const store = await newStore();
   const { code } = await createPlayer(store, T0);
   assert.equal(await store.getPlayerByHash(code), undefined);
   assert.equal(await store.getPlayerByHash(code.replaceAll('-', '')), undefined);
 });
 
 test('verified runs build a player history and a best score per difficulty', async () => {
-  const store = createStore(':memory:');
+  const store = await newStore();
   const { playerId, code } = await createPlayer(store, T0);
   const scores: number[] = [];
   for (let i = 0; i < 3; i++) {
@@ -201,7 +203,7 @@ test('verified runs build a player history and a best score per difficulty', asy
 });
 
 test('anonymous runs verify but belong to nobody', async () => {
-  const store = createStore(':memory:');
+  const store = await newStore();
   const { playerId } = await createPlayer(store, T0);
   const { runId, seed, cols, rows } = await issue(store, null);
   const run = play(seed, cols, rows);
@@ -212,13 +214,13 @@ test('anonymous runs verify but belong to nobody', async () => {
 // --- settings: stored on the server with the player, so they follow the recovery code ---
 
 test('new players get default settings', async () => {
-  const store = createStore(':memory:');
+  const store = await newStore();
   const { stats } = await createPlayer(store, T0);
   assert.deepEqual(stats.settings, { difficulty: 'medium', sound: true });
 });
 
 test('settings are saved on the server and come back with the recovery code', async () => {
-  const store = createStore(':memory:');
+  const store = await newStore();
   const { code } = await createPlayer(store, T0);
   const p = (await playerFromCode(store, code))!;
   assert.equal((await updateSettings(store, p, { difficulty: 'hard', sound: false })).status, 200);
@@ -227,7 +229,7 @@ test('settings are saved on the server and come back with the recovery code', as
 });
 
 test('a partial settings update keeps the other value', async () => {
-  const store = createStore(':memory:');
+  const store = await newStore();
   const { code } = await createPlayer(store, T0);
   await updateSettings(store, (await playerFromCode(store, code))!, { difficulty: 'easy' });
   const p = (await playerFromCode(store, code))!;
@@ -237,7 +239,7 @@ test('a partial settings update keeps the other value', async () => {
 });
 
 test('bad settings are rejected and change nothing', async () => {
-  const store = createStore(':memory:');
+  const store = await newStore();
   const { code } = await createPlayer(store, T0);
   const p = (await playerFromCode(store, code))!;
   for (const body of [{ difficulty: 'nightmare' }, { sound: 'yes' }, { difficulty: 5 }]) assert.equal((await updateSettings(store, p, body)).status, 400);
@@ -253,7 +255,7 @@ test('names: valid ones pass, bad ones say why', () => {
 });
 
 test('names are unique, ignoring case, and a player can keep their own', async () => {
-  const store = createStore(':memory:');
+  const store = await newStore();
   const a = (await playerFromCode(store, (await createPlayer(store, T0)).code))!;
   const b = (await playerFromCode(store, (await createPlayer(store, T0)).code))!;
   assert.equal((await updateName(store, a, { name: 'Chomp' })).status, 200);
@@ -266,7 +268,7 @@ test('names are unique, ignoring case, and a player can keep their own', async (
 // --- leaderboard ---
 
 test('leaderboard ranks each player by their best score, per difficulty', async () => {
-  const store = createStore(':memory:');
+  const store = await newStore();
   const ids: string[] = [];
   for (let i = 0; i < 3; i++) ids.push((await createPlayer(store, T0 + i)).playerId);
   await addRun(store, ids[0], 'medium', 10); await addRun(store, ids[0], 'medium', 40); // best 40, counted once
@@ -279,7 +281,7 @@ test('leaderboard ranks each player by their best score, per difficulty', async 
 });
 
 test('leaderboard: default names, chosen names, ties share a rank, zero scores are left out', async () => {
-  const store = createStore(':memory:');
+  const store = await newStore();
   const a = await createPlayer(store, T0), b = await createPlayer(store, T0 + 1), c = await createPlayer(store, T0 + 2);
   await updateName(store, (await playerFromCode(store, a.code))!, { name: 'Chomp' });
   await addRun(store, a.playerId, 'easy', 30); await addRun(store, b.playerId, 'easy', 30); await addRun(store, c.playerId, 'easy', 0);
@@ -291,7 +293,7 @@ test('leaderboard: default names, chosen names, ties share a rank, zero scores a
 });
 
 test('leaderboard shows the viewer their own rank even outside the top', async () => {
-  const store = createStore(':memory:');
+  const store = await newStore();
   const me = await createPlayer(store, T0);
   for (let i = 1; i <= 12; i++) await addRun(store, (await createPlayer(store, T0 + i)).playerId, 'medium', 100 + i);
   await addRun(store, me.playerId, 'medium', 5);
@@ -305,7 +307,7 @@ test('leaderboard shows the viewer their own rank even outside the top', async (
 });
 
 test('the viewer is marked in the top rows', async () => {
-  const store = createStore(':memory:');
+  const store = await newStore();
   const me = await createPlayer(store, T0);
   await addRun(store, me.playerId, 'hard', 50);
   const b = (await leaderboard(store, 'hard', (await playerFromCode(store, me.code))!))!;
@@ -314,7 +316,7 @@ test('the viewer is marked in the top rows', async () => {
 
 // --- database upgrade ---
 
-test('an old database without settings, names or difficulty is upgraded in place', async () => {
+test('an old database without settings, names or difficulty is upgraded in place', { skip: PG && 'SQLite-only upgrade path' }, async () => {
   const dir = mkdtempSync(join(tmpdir(), 'biteclub-'));
   const path = join(dir, 'old.db');
   try {

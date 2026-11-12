@@ -1,5 +1,5 @@
 import { getStore } from '../../../../src/server/store.ts';
-import { authPlayer, clientIp, json, limited, readJson } from '../../../../src/server/http.ts';
+import { authPlayer, clientIp, json, limited, readJson, safe } from '../../../../src/server/http.ts';
 import { verifyWallet } from '../../../../src/server/wallet.ts';
 
 export const runtime = 'nodejs';
@@ -7,7 +7,7 @@ export const runtime = 'nodejs';
 // Check a signed sign-in message and link the wallet to a player. With a valid x-player-code the wallet is
 // linked to that player. If the wallet already belongs to another player, this browser gets a credential for
 // that player (the response includes `code`, shown once).
-export async function POST(req: Request) {
+export const POST = safe(async (req: Request) => {
   if (limited(`wallet:${clientIp(req)}`, 20, 10 * 60 * 1000)) return json({ error: 'too many attempts, try again later' }, 429);
   const viewer = await authPlayer(req);
   if (viewer === 'invalid') return json({ error: 'unknown player' }, 401);
@@ -17,4 +17,4 @@ export async function POST(req: Request) {
   const host = req.headers.get('x-forwarded-host') ?? req.headers.get('host');
   const r = await verifyWallet(getStore(), { message: b.message, signature: b.signature, host, viewer, switchOk: b.switchOk === true, now: Date.now() });
   return json(r.body, r.status);
-}
+});

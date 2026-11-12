@@ -32,3 +32,20 @@ export async function authPlayer(req: Request): Promise<Player | null | 'invalid
 }
 
 export const json = (body: unknown, status = 200) => Response.json(body, { status });
+
+/**
+ * Wrap a route handler so an unexpected failure is logged (it shows up in Vercel's logs) and answered with a JSON error,
+ * instead of an empty 500 that tells nobody anything. Never logs request bodies, codes or signatures.
+ */
+export function safe<A extends unknown[]>(handler: (...args: A) => Promise<Response>) {
+  return async (...args: A): Promise<Response> => {
+    try { return await handler(...args); }
+    catch (e) {
+      const req = args[0] as Request | undefined;
+      let path = '';
+      try { path = req ? new URL(req.url).pathname : ''; } catch { /* ignore */ }
+      console.error(`api error ${req?.method ?? ''} ${path}:`, e instanceof Error ? `${e.message}\n${e.stack ?? ''}` : e);
+      return json({ error: 'server error' }, 500);
+    }
+  };
+}

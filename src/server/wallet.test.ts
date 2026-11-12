@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { createSiweMessage } from 'viem/siwe';
+import { newStore, PG } from './test-store.ts';
 import { createStore, type Player, type Store } from './store.ts';
 import { createPlayer, normalizeCode, playerFromCode } from './players.ts';
 import { issueNonce, verifyWallet, NONCE_TTL_MS, type WalletResult } from './wallet.ts';
@@ -54,7 +55,7 @@ const addRun = (store: Store, playerId: string, score: number) => store.putRun({
 });
 
 test('a wallet with no player yet gets a new player and a credential', async () => {
-  const store = createStore(':memory:'), w = newWallet();
+  const store = await newStore(), w = newWallet();
   const r = ok(await signIn(store, w));
   assert.equal(r.created, true);
   assert.ok(r.code && normalizeCode(r.code));
@@ -64,7 +65,7 @@ test('a wallet with no player yet gets a new player and a credential', async () 
 });
 
 test('signing in links the wallet to this browser\'s player, without a new credential', async () => {
-  const store = createStore(':memory:'), w = newWallet(), p = await player(store);
+  const store = await newStore(), w = newWallet(), p = await player(store);
   const r = ok(await signIn(store, w, p.viewer));
   assert.equal(r.playerId, p.playerId);
   assert.equal(r.code, undefined);
@@ -74,7 +75,7 @@ test('signing in links the wallet to this browser\'s player, without a new crede
 });
 
 test('signing in again with the same wallet on the same player is harmless', async () => {
-  const store = createStore(':memory:'), w = newWallet(), p = await player(store);
+  const store = await newStore(), w = newWallet(), p = await player(store);
   ok(await signIn(store, w, p.viewer));
   const again = ok(await signIn(store, w, p.viewer));
   assert.equal(again.code, undefined);
@@ -82,7 +83,7 @@ test('signing in again with the same wallet on the same player is harmless', asy
 });
 
 test('a fresh browser signs in with the wallet and gets the same player back', async () => {
-  const store = createStore(':memory:'), w = newWallet();
+  const store = await newStore(), w = newWallet();
   const home = await player(store);
   await addRun(store, home.playerId, 20);
   ok(await signIn(store, w, home.viewer)); // link it at home
@@ -98,7 +99,7 @@ test('a fresh browser signs in with the wallet and gets the same player back', a
 });
 
 test('the server stores only hashes of the credentials it mints', async () => {
-  const store = createStore(':memory:'), w = newWallet(), home = await player(store);
+  const store = await newStore(), w = newWallet(), home = await player(store);
   ok(await signIn(store, w, home.viewer));
   const r = ok(await signIn(store, w, (await player(store)).viewer));
   assert.equal(await store.getPlayerByHash(r.code!), undefined);
@@ -106,7 +107,7 @@ test('the server stores only hashes of the credentials it mints', async () => {
 });
 
 test('signing in without any player (a browser with nothing saved) just logs in', async () => {
-  const store = createStore(':memory:'), w = newWallet(), home = await player(store);
+  const store = await newStore(), w = newWallet(), home = await player(store);
   ok(await signIn(store, w, home.viewer));
   const r = ok(await signIn(store, w, null));
   assert.equal(r.playerId, home.playerId);
@@ -116,7 +117,7 @@ test('signing in without any player (a browser with nothing saved) just logs in'
 });
 
 test('switching away from a player with verified runs needs a yes, and the sign-in survives the wait', async () => {
-  const store = createStore(':memory:'), w = newWallet();
+  const store = await newStore(), w = newWallet();
   const home = await player(store);
   ok(await signIn(store, w, home.viewer));
   const here = await player(store);
@@ -133,13 +134,13 @@ test('switching away from a player with verified runs needs a yes, and the sign-
 });
 
 test('a player with no runs is switched without asking', async () => {
-  const store = createStore(':memory:'), w = newWallet();
+  const store = await newStore(), w = newWallet();
   ok(await signIn(store, w, (await player(store)).viewer));
   assert.equal(ok(await signIn(store, w, (await player(store)).viewer)).switched, true);
 });
 
 test('a player already linked to one wallet cannot take a second wallet', async () => {
-  const store = createStore(':memory:'), a = newWallet(), b = newWallet(), p = await player(store);
+  const store = await newStore(), a = newWallet(), b = newWallet(), p = await player(store);
   ok(await signIn(store, a, p.viewer));
   const signed = await prepare(store, b);
   const viewer = (await playerFromCode(store, p.code))!; // reload so it knows about wallet A
@@ -149,19 +150,19 @@ test('a player already linked to one wallet cannot take a second wallet', async 
 });
 
 test('a sign-in can only be used once', async () => {
-  const store = createStore(':memory:'), w = newWallet(), p = await player(store);
+  const store = await newStore(), w = newWallet(), p = await player(store);
   const signed = await prepare(store, w);
   ok(await send(store, signed, p.viewer));
   assert.match(err(await send(store, signed, p.viewer), 401), /already used|expired/);
 });
 
 test('a nonce the server never issued is rejected', async () => {
-  const store = createStore(':memory:'), w = newWallet();
+  const store = await newStore(), w = newWallet();
   assert.match(err(await signIn(store, w, null, { nonce: 'deadbeefdeadbeef' }), 401), /expired|already used/);
 });
 
 test('a nonce expires after 5 minutes', async () => {
-  const store = createStore(':memory:'), w = newWallet();
+  const store = await newStore(), w = newWallet();
   const signed = await prepare(store, w);
   assert.equal(ok(await send(store, signed, null, { now: T0 + NONCE_TTL_MS - 1000 })).created, true); // still fine just before
   const late = await prepare(store, newWallet());
@@ -169,48 +170,48 @@ test('a nonce expires after 5 minutes', async () => {
 });
 
 test('a message signed for another site is rejected', async () => {
-  const store = createStore(':memory:'), w = newWallet();
+  const store = await newStore(), w = newWallet();
   assert.match(err(await signIn(store, w, null, { domain: 'evil.example' }), 401), /not valid for this site/);
 });
 
 test('a uri on another site is rejected', async () => {
-  const store = createStore(':memory:'), w = newWallet();
+  const store = await newStore(), w = newWallet();
   assert.match(err(await signIn(store, w, null, { uri: 'http://evil.example' }), 401), /not valid for this site/);
 });
 
 test('an expired message is rejected', async () => {
-  const store = createStore(':memory:'), w = newWallet();
+  const store = await newStore(), w = newWallet();
   err(await signIn(store, w, null, { issuedAt: T0 - 5 * MIN, expiresAt: T0 - MIN }), 401);
 });
 
 test('a message issued long ago is rejected even if it has not expired', async () => {
-  const store = createStore(':memory:'), w = newWallet();
+  const store = await newStore(), w = newWallet();
   err(await signIn(store, w, null, { issuedAt: T0 - 20 * MIN, expiresAt: T0 + 30 * MIN, now: T0 }), 401);
 });
 
 test('a message that lives too long is rejected', async () => {
-  const store = createStore(':memory:'), w = newWallet();
+  const store = await newStore(), w = newWallet();
   err(await signIn(store, w, null, { expiresAt: T0 + 24 * 60 * MIN }), 401);
 });
 
 test('a message issued in the future is rejected', async () => {
-  const store = createStore(':memory:'), w = newWallet();
+  const store = await newStore(), w = newWallet();
   err(await signIn(store, w, null, { issuedAt: T0 + 10 * MIN, expiresAt: T0 + 20 * MIN }), 401);
 });
 
 test('a signature from a different key is rejected', async () => {
-  const store = createStore(':memory:'), w = newWallet(), other = newWallet();
+  const store = await newStore(), w = newWallet(), other = newWallet();
   assert.match(err(await signIn(store, w, null, { signer: other }), 401), /does not match/);
 });
 
 test('claiming someone else\'s address in the message is rejected', async () => {
-  const store = createStore(':memory:'), mine = newWallet(), victim = newWallet();
+  const store = await newStore(), mine = newWallet(), victim = newWallet();
   assert.match(err(await signIn(store, mine, null, { address: victim.address }), 401), /does not match/);
   assert.equal(await store.getPlayerByWallet(victim.address.toLowerCase()), undefined);
 });
 
 test('malformed input is rejected', async () => {
-  const store = createStore(':memory:'), w = newWallet();
+  const store = await newStore(), w = newWallet();
   const good = await prepare(store, w);
   const sig65 = good.signature;
   const cases: [unknown, unknown][] = [
@@ -225,19 +226,19 @@ test('malformed input is rejected', async () => {
 });
 
 test('the wallet address is stored in lowercase whatever case the wallet used', async () => {
-  const store = createStore(':memory:'), w = newWallet();
+  const store = await newStore(), w = newWallet();
   const r = ok(await signIn(store, w, null, { address: w.address.toLowerCase() }));
   assert.equal(r.address, w.address.toLowerCase());
   assert.equal((await store.getPlayerByWallet(w.address.toLowerCase()))?.wallet, w.address.toLowerCase());
 });
 
 test('any chain id in the message is accepted, since sign-in does not depend on the network', async () => {
-  const store = createStore(':memory:');
+  const store = await newStore();
   for (const chainId of [1, 46630, 4663]) ok(await signIn(store, newWallet(), null, { chainId }));
 });
 
 test('different players cannot end up with the same wallet', async () => {
-  const store = createStore(':memory:'), w = newWallet();
+  const store = await newStore(), w = newWallet();
   const a = await player(store), b = await player(store);
   ok(await signIn(store, w, a.viewer));
   const r = ok(await signIn(store, w, b.viewer)); // b signs in with a's wallet: b switches to a, never shares
@@ -245,7 +246,7 @@ test('different players cannot end up with the same wallet', async () => {
   assert.equal((await store.getPlayerStats(b.playerId)).wallet, null);
 });
 
-test('an old database without wallet support is upgraded in place', async () => {
+test('an old database without wallet support is upgraded in place', { skip: PG && 'SQLite-only upgrade path' }, async () => {
   const dir = mkdtempSync(join(tmpdir(), 'biteclub-'));
   const path = join(dir, 'old.db');
   try {
