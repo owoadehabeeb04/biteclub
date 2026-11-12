@@ -242,7 +242,15 @@ export function createPostgresStore(url: string): Store {
 function makeStore(): Store {
   // Vercel's Postgres (Neon) integration sets DATABASE_URL and POSTGRES_URL
   const url = process.env.DATABASE_URL ?? process.env.POSTGRES_URL;
-  if (url) return createPostgresStore(url);
+  if (url) {
+    if (!process.env.VERCEL) {
+      // Next reads .env on its own, so a DATABASE_URL saved there is used by local runs too. Say so, naming the host only.
+      let host = 'a remote database';
+      try { host = new URL(url).hostname; } catch { /* keep the generic name */ }
+      console.warn(`[biteclub] Using the Postgres database at ${host} from DATABASE_URL. Local runs and tests will read and WRITE to it. Set DATABASE_URL= (empty) to use a local SQLite file instead.`);
+    }
+    return createPostgresStore(url);
+  }
   // No writable disk on Vercel, so the SQLite file can't work there. Say so, instead of failing with an empty 500.
   if (process.env.VERCEL) throw new Error('No database configured. Add a Postgres database to the Vercel project (Storage tab) so DATABASE_URL is set, then redeploy.');
   return createStore(process.env.BITECLUB_DB ?? '.data/biteclub.db');

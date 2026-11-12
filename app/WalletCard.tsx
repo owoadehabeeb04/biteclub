@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useConnect, useConnection, useConnectors, useDisconnect, useSignMessage, useSwitchChain } from 'wagmi';
 import { createSiweMessage } from 'viem/siwe';
 import { robinhoodTestnet } from '../src/chain';
@@ -30,20 +30,21 @@ export default function WalletCard({ me, onLinked }: { me: Me; onLinked: (r: Wal
   const [phone, setPhone] = useState(false); // a touch screen: WalletConnect (phone wallets) goes first
   useEffect(() => { setMounted(true); setPhone(matchMedia('(pointer: coarse)').matches); }, []);
 
-  // WalletConnect needs to reach its relay server. Some networks (or a broken DNS) can't, and its popup then spins forever with
-  // a blank QR code. Check when the list opens, so we can say so before anyone taps it. This only warns; it never blocks.
+  // WalletConnect needs to reach its relay server (relay.walletconnect.org). Some networks block that name or fail to look it up,
+  // and WalletConnect's popup then spins on a blank QR code with a disabled Open button. So check first, and when it can't be
+  // reached say what to do instead of opening a dead popup.
   const [wcReachable, setWcReachable] = useState<boolean | null>(null);
+  const [checking, setChecking] = useState(false);
+  const relayCheck = useRef<Promise<boolean> | null>(null);
   const hasWalletConnect = connectors.some((c) => c.type === 'walletConnect');
-  useEffect(() => {
-    if (!open || !hasWalletConnect || wcReachable !== null) return;
-    let live = true;
+  const checkRelay = () => (relayCheck.current ??= (async () => {
     const ctl = new AbortController();
     const timer = setTimeout(() => ctl.abort(), 6000);
-    fetch('https://relay.walletconnect.org/', { mode: 'no-cors', cache: 'no-store', signal: ctl.signal })
-      .then(() => live && setWcReachable(true), () => live && setWcReachable(false))
-      .finally(() => clearTimeout(timer));
-    return () => { live = false; clearTimeout(timer); ctl.abort(); };
-  }, [open, hasWalletConnect, wcReachable]);
+    try { await fetch('https://relay.walletconnect.org/', { mode: 'no-cors', cache: 'no-store', signal: ctl.signal }); return true; }
+    catch { return false; } finally { clearTimeout(timer); }
+  })().then((ok) => { setWcReachable(ok); return ok; }));
+  const recheck = () => { relayCheck.current = null; setWcReachable(null); void checkRelay(); };
+  useEffect(() => { if (open && hasWalletConnect) void checkRelay(); }, [open, hasWalletConnect]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Wallets announce themselves by name. The generic entry is only for older wallets that don't.
   const walletConnect = connectors.find((c) => c.type === 'walletConnect'); // only present when a WalletConnect project ID is set
@@ -53,22 +54,35 @@ export default function WalletCard({ me, onLinked }: { me: Me; onLinked: (r: Wal
   const mine = me.wallet && address ? me.wallet === address.toLowerCase() : false;
   const wrongNetwork = isConnected && chainId !== robinhoodTestnet.id;
 
-  const wcButton = walletConnect && (
-    <>
-    <button className="wallet-btn" onClick={() => doConnect(walletConnect)} disabled={connecting}>
+  const wcButton = walletConnect && (wcReachable === false ? (
+    <div className="notice" role="status">
+      <p style={{ margin: 0 }}><b>WalletConnect can’t be reached from this network.</b> Its QR code and wallet links can’t load here, usually because your internet provider or DNS is blocking relay.walletconnect.org.</p>
+      <p style={{ margin: '8px 0 0' }}>Try one of these:</p>
+      <ul style={{ margin: '6px 0 0', paddingLeft: 20 }}>
+        <li>Switch to mobile data or a different Wi-Fi, then check again.</li>
+        <li>Set your DNS to 8.8.8.8 or 1.1.1.1. On Android: Settings, Network, Private DNS, then dns.google.</li>
+        <li>Open this page inside your wallet app’s own browser and connect from there.</li>
+      </ul>
+      <div className="row" style={{ gap: 8, marginTop: 10, justifyContent: 'flex-start' }}>
+        <button className="mini" onClick={recheck}>Check again</button>
+        <button className="mini" onClick={() => doConnect(walletConnect, true)}>Try anyway</button>
+      </div>
+    </div>
+  ) : (
+    <button className="wallet-btn" onClick={() => doConnect(walletConnect)} disabled={connecting || checking}>
       <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#3B99FC" /><path d="M7.2 9.6c2.6-2.5 6.9-2.5 9.6 0l.3.3a.3.3 0 0 1 0 .4l-1.1 1.1a.2.2 0 0 1-.3 0l-.4-.4c-1.8-1.8-4.8-1.8-6.7 0l-.5.4a.2.2 0 0 1-.3 0L6.8 10.3a.3.3 0 0 1 0-.4l.4-.3Z" fill="#fff" /></svg>
-      <span>WalletConnect<small style={{ display: 'block', fontFamily: 'var(--bc-font-body)', fontSize: 12, color: 'var(--bc-fog)' }}>Phone and mobile wallets</small></span>
+      <span>WalletConnect<small style={{ display: 'block', fontFamily: 'var(--bc-font-body)', fontSize: 12, color: 'var(--bc-fog)' }}>{checking ? 'Checking the connection…' : 'Phone and mobile wallets'}</small></span>
     </button>
-    {wcReachable === false && (
-      <p className="note" role="status" style={{ margin: 0 }}>
-        WalletConnect can’t be reached from this network right now, so its QR code may not load. Try another network or DNS (such as 8.8.8.8), or use a browser wallet.
-      </p>
-    )}
-    </>
-  );
+  ));
 
-  async function doConnect(c: (typeof connectors)[number]) {
+  async function doConnect(c: (typeof connectors)[number], force = false) {
     setMsg(null);
+    if (c.type === 'walletConnect' && !force) {
+      setChecking(true);
+      const reachable = await checkRelay();
+      setChecking(false);
+      if (!reachable) return; // the explanation is already on screen
+    }
     try { await connect({ connector: c }); setOpen(false); } catch (e) { setMsg({ text: why(e), bad: true }); }
   }
 

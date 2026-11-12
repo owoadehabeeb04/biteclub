@@ -28,7 +28,8 @@ export async function createPlayer(store: Store, now: number): Promise<{ playerI
   const id = crypto.randomUUID(), code = generate();
   await store.createPlayer({ id, codeHash: hash(code), createdAt: now });
   // the only time the server ever has the plain code
-  return { playerId: id, code: formatCode(code), stats: await store.getPlayerStats(id) };
+  const stats: PlayerStats = { playerId: id, name: null, wallet: null, settings: { ...DEFAULT_SETTINGS }, bests: { easy: 0, medium: 0, hard: 0 }, games: 0, recent: [] };
+  return { playerId: id, code: formatCode(code), stats };
 }
 
 /** Another credential for an existing player, e.g. for a new browser that signed in with the player's wallet. Shown once. */

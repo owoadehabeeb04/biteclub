@@ -42,7 +42,7 @@ export const cacheBest = (d: Difficulty, score: number) => write(BESTS_KEY, { ..
 async function call(path: string, init: RequestInit = {}, withPlayer = true): Promise<Response | null> {
   const p = withPlayer ? savedPlayer() : null;
   const ctl = new AbortController();
-  const timer = setTimeout(() => ctl.abort(), 4000);
+  const timer = setTimeout(() => ctl.abort(), 10_000); // a cold start (function plus a sleeping database) can be slow
   try {
     return await fetch(path, {
       ...init, signal: ctl.signal,

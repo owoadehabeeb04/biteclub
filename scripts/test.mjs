@@ -4,7 +4,7 @@ import { spawnSync } from 'node:child_process';
 
 const run = (label, files, env = {}) => {
   console.log(`\n=== ${label} ===`);
-  const r = spawnSync(process.execPath, ['--test', ...files], { stdio: 'inherit', env: { ...process.env, ...env } });
+  const r = spawnSync(process.execPath, ['--test', ...files], { stdio: 'inherit', env: { ...process.env, DATABASE_URL: '', POSTGRES_URL: '', ...env } });
   return r.status === 0;
 };
 

@@ -95,12 +95,14 @@ export function createPgStore(db: Db): Store {
       await q('INSERT INTO players (id, code_hash, created_at, settings) VALUES ($1, $2, $3, $4)', [p.id, p.codeHash, p.createdAt, JSON.stringify(DEFAULT_SETTINGS)]);
     },
     async getPlayerByHash(hash) {
-      const own = (await q('SELECT id, created_at, name, settings, wallet FROM players WHERE code_hash = $1', [hash])).rows[0];
-      if (own) return toPlayer(own);
-      const viaCredential = (await q(
-        'SELECT p.id, p.created_at, p.name, p.settings, p.wallet FROM credentials c JOIN players p ON p.id = c.player_id WHERE c.code_hash = $1', [hash],
+      // the player's original code or any credential minted later, in one round trip
+      const r = (await q(
+        `SELECT id, created_at, name, settings, wallet FROM players WHERE code_hash = $1
+         UNION ALL
+         SELECT p.id, p.created_at, p.name, p.settings, p.wallet FROM credentials c JOIN players p ON p.id = c.player_id WHERE c.code_hash = $1
+         LIMIT 1`, [hash],
       )).rows[0];
-      return viaCredential ? toPlayer(viaCredential) : undefined;
+      return r ? toPlayer(r) : undefined;
     },
     async addCredential(playerId, hash, createdAt) {
       await q('INSERT INTO credentials (code_hash, player_id, created_at) VALUES ($1, $2, $3)', [hash, playerId, createdAt]);
@@ -126,18 +128,21 @@ export function createPgStore(db: Db): Store {
       return (await q('DELETE FROM siwe_nonces WHERE nonce = $1 AND expires_at > $2', [nonce, now])).count === 1;
     },
     async getPlayerStats(playerId) {
-      const p = (await q('SELECT name, settings, wallet FROM players WHERE id = $1', [playerId])).rows[0];
+      // four independent lookups, sent together instead of one after another
+      const [pRes, bestRes, gamesRes, recentRes] = await Promise.all([
+        q('SELECT name, settings, wallet FROM players WHERE id = $1', [playerId]),
+        q('SELECT difficulty, MAX(score) AS b FROM runs WHERE player_id = $1 AND score IS NOT NULL GROUP BY difficulty', [playerId]),
+        q('SELECT COUNT(*) AS n FROM runs WHERE player_id = $1 AND score IS NOT NULL', [playerId]),
+        q(`SELECT score, eaten, length, ticks, cause, difficulty, submitted_at AS at FROM runs
+            WHERE player_id = $1 AND score IS NOT NULL ORDER BY submitted_at DESC LIMIT 10`, [playerId]),
+      ]);
+      const p = pRes.rows[0];
       const bests: Record<Difficulty, number> = { easy: 0, medium: 0, hard: 0 };
-      for (const r of (await q('SELECT difficulty, MAX(score) AS b FROM runs WHERE player_id = $1 AND score IS NOT NULL GROUP BY difficulty', [playerId])).rows)
-        if ((r.difficulty as string) in bests) bests[r.difficulty as Difficulty] = num(r.b);
-      const games = num((await q('SELECT COUNT(*) AS n FROM runs WHERE player_id = $1 AND score IS NOT NULL', [playerId])).rows[0].n);
-      const recent = (await q(
-        `SELECT score, eaten, length, ticks, cause, difficulty, submitted_at AS at FROM runs
-         WHERE player_id = $1 AND score IS NOT NULL ORDER BY submitted_at DESC LIMIT 10`, [playerId],
-      )).rows;
+      for (const r of bestRes.rows) if ((r.difficulty as string) in bests) bests[r.difficulty as Difficulty] = num(r.b);
       return {
-        playerId, name: (p?.name as string | null) ?? null, wallet: (p?.wallet as string | null) ?? null, settings: parseSettings(p?.settings), bests, games,
-        recent: recent.map((r) => ({ score: num(r.score), eaten: num(r.eaten), length: num(r.length), ticks: num(r.ticks), cause: (r.cause as Cause) ?? null, difficulty: r.difficulty as Difficulty, at: num(r.at) })),
+        playerId, name: (p?.name as string | null) ?? null, wallet: (p?.wallet as string | null) ?? null, settings: parseSettings(p?.settings), bests,
+        games: num(gamesRes.rows[0].n),
+        recent: recentRes.rows.map((r) => ({ score: num(r.score), eaten: num(r.eaten), length: num(r.length), ticks: num(r.ticks), cause: (r.cause as Cause) ?? null, difficulty: r.difficulty as Difficulty, at: num(r.at) })),
       } satisfies PlayerStats;
     },
     async setSettings(playerId, s) {
